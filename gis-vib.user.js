@@ -24,44 +24,45 @@
 // ==/UserScript==
 
 const lang = {
-  en: 'View image',
-  ru: 'Показать в полном размере',
-  'zh-CN': '查看原图',
-  ja: '画像を表示',
-  he: 'הצג תמונה',
-  fr: 'Voir l\'image',
-  sl: 'Ogled slike',
-  ar: 'عرض الصورة',
-  de: 'Bild ansehen',
-  tr: 'Resmi görüntüle',
-  pt: 'Ver imagem',
-  lt: 'Rodyti vaizdą',
-  pl: 'Pokaż obraz',
-  nl: 'Afbeelding bekijken',
-  se: 'Visa bild',
-  uk: 'Показати зображення',
-  it: 'Apri immagine'
+    en: 'View image',
+    ru: 'Показать в полном размере',
+    'zh-CN': '查看原图',
+    ja: '画像を表示',
+    he: 'הצג תמונה',
+    fr: 'Voir l\'image',
+    sl: 'Ogled slike',
+    ar: 'عرض الصورة',
+    de: 'Bild ansehen',
+    tr: 'Resmi görüntüle',
+    pt: 'Ver imagem',
+    lt: 'Rodyti vaizdą',
+    pl: 'Pokaż obraz',
+    nl: 'Afbeelding bekijken',
+    se: 'Visa bild',
+    uk: 'Показати зображення',
+    it: 'Apri immagine'
 };
 
 const localizedViewImage = lang[(lang[navigator.language] ? navigator.language : 'en')];
 
 function addButton(node) {
-  if (node.nodeType === Node.ELEMENT_NODE) {
-    if (node.classList.contains('irc_ris')) {
-      let container = node.closest('.irc_c');
+    if (node.nodeType !== Node.ELEMENT_NODE) return
+    if (!node.classList.contains('irc_ris')) return
 
-      let similarImages = node.querySelectorAll('.rg_l');
-      [].forEach.call(similarImages, (image) => {
+    let container = node.closest('.irc_c');
+
+    let similarImages = node.querySelectorAll('.rg_l');
+    [].forEach.call(similarImages, (image) => {
         image.addEventListener('click', updateLinkAfterClickOnSimilar);
-      });
+    });
 
-      let thumbnail = node.querySelector('.irc_rimask.irc_rist');
-      let src = unescape(thumbnail.querySelector('.rg_l').href.match(/imgurl=([^&]+)/)[1]);
+    let thumbnail = container.querySelector('img.irc_mi');
+    let src = thumbnail.src;
 
-      let buttons = container.querySelector('.irc_but_r tr');
+    let buttons = container.querySelector('.irc_but_r tr');
 
-      let button = buttons.querySelector('td.mgisga');
-      if (button === null) {
+    let button = buttons.querySelector('td.mgisga');
+    if (button === null) {
         let openButton = buttons.querySelector('td');
 
         button = openButton.cloneNode(true);
@@ -75,35 +76,33 @@ function addButton(node) {
         link.removeAttribute('jsaction');
 
         openButton.after(button);
-      }
-
-      let link = button.querySelector('a');
-      link.href = src;
     }
-  }
+
+    let link = button.querySelector('a');
+    link.href = src;
 }
 
 function updateLinkAfterClickOnSimilar({target:node}) {
-  let src = unescape(node.closest('.rg_l').href.match(/imgurl=([^&]+)/)[1]);
-  let container = node.closest('.irc_c');
-  let button = container.querySelector('.mgisga');
-  let link = button.querySelector('a');
-  link.href = src;
+    let src = unescape(node.closest('.rg_l').href.match(/imgurl=([^&]+)/)[1]);
+    let container = node.closest('.irc_c');
+    let button = container.querySelector('.mgisga');
+    let link = button.querySelector('a');
+    link.href = src;
 }
 
 const observer = new MutationObserver((mutations) => {
-  mutations.forEach((mutation) => {
-    const addedNodes = mutation.addedNodes || [];
+    mutations.forEach((mutation) => {
+        const addedNodes = mutation.addedNodes || [];
 
-    [].forEach.call(addedNodes, (newNode) => {
-        addButton(newNode);
+        [].forEach.call(addedNodes, (newNode) => {
+            addButton(newNode);
+        });
     });
-  });
 });
 
 observer.observe(document.body, {
-  childList: true,
-  subtree: true
+    childList: true,
+    subtree: true
 });
 
 addButton(document.body);
